@@ -19,16 +19,22 @@ const conn = mysql.createConnection({
 });
 
 app.get('/', (req,res) => {
-    if(conn) {
-        var msg = 'Koneksi ke database sukses.'
-    } else {
-        msg = 'Koneksi ke database gagal.'
-    }
-    res.send(`<h3>Selamat datang di API! ${msg}</h3>`);
+    var checkConn = conn ? 'Sukses✔️' : 'Gagal❌';
+    res.send(`<h2>Selamat Datang di API 😊<br/> 
+                Menggunakan Node.js & MySQL.<br/> 
+                Koneksi ke database: ${checkConn}<br/><br/>
+                Dibuat dengan cinta 💕</h2>`);
 });
 
 app.get('/getlistfilm', (req,res) => {
-    var sql = 'SELECT * FROM film;';
+    var sql =  `SELECT 
+                fi.judul_film AS JudulFilm, 
+                ka.nama_kategori AS NamaKategori, 
+                fi.harga_film AS HargaFilm
+                FROM kategori ka
+                JOIN koleksi ko ON ko.id_kategori = ka.id_kategori
+                JOIN film fi ON ko.id_film = fi.id_film
+                WHERE ka.nama_kategori = 'Adventure'`;
     conn.query(sql, (err, results) => {
         if(err) throw err;
         res.send(results);
@@ -37,6 +43,7 @@ app.get('/getlistfilm', (req,res) => {
 
 app.post('/addfilm', (req,res) => {
     var sql = 'INSERT INTO film SET ?';
+    var data = req.body;
     conn.query(sql, data, (err, results) => {
         if(err) {
             return res.status(500).json({ 
